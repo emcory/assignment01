@@ -61,6 +61,9 @@ public class Main {
     public static void main(String[] args) {
         readFile(args[0]);
 
+        for (int i = 0; i < sorted_movies.size(); i++) {
+            System.out.println(sorted_movies.get(i));
+        }
         System.out.println(sorted_movies.size());
     }
 }
