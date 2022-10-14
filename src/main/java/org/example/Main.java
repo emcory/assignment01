@@ -1,7 +1,11 @@
 package org.example;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.*;
 
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -9,27 +13,34 @@ import java.util.ArrayList;
 public class Main {
     //holds all sorted movies
     public static ArrayList<String> sorted_movies = new ArrayList<>();
-    public static void readFile(String filepath) {
+    public static void readFile(String filepath) throws FileNotFoundException {
+        // Create an object of file reader
+        FileReader filereader = new FileReader(filepath);
+
+        // create csvReader object
+        CSVReader csvReader = new CSVReader(filereader);
+        String[] nextRecord = new String[4];
         try {
-            // Create an object of file reader
-            FileReader filereader = new FileReader(filepath);
+            csvReader.readNext(); //skip first line
+        } catch (IOException | CsvValidationException e) {
+            throw new RuntimeException(e);
+        }
 
-            // create csvReader object and skip first Line
-            CSVReader csvReader = new CSVReader(filereader);
-            String[] nextRecord;
-            csvReader.readNext();
-
-            // read line by line
-            while ((nextRecord = csvReader.readNext()) != null) {
-                //uses binary search to find index to sort alphabetically
-                int index = binarySearch(sorted_movies, nextRecord[1]);
-                sorted_movies.add(index, nextRecord[1]);
+        // read line by line
+            while (nextRecord != null) {
+                try {
+                    nextRecord = csvReader.readNext();
+                    //uses binary search to find index to sort alphabetically
+                    int index = binarySearch(sorted_movies, nextRecord[1]);
+                    sorted_movies.add(index, nextRecord[1]);
+//                    String[] split_names = nextRecord[2].split("\"character\": \"");
+//                    //String character =
+//                    System.out.println(split_names[1]);
+                } catch (IOException | CsvValidationException | NullPointerException e) {
+                    //ignore
+                }
             }
         }
-        catch (IOException | CsvValidationException e) {
-            System.out.println(e);
-        }
-    }
     public static int binarySearch(ArrayList<String> movies, String movie_to_add) {
         int middle, low = 0, high = movies.size() - 1;
 
@@ -52,11 +63,11 @@ public class Main {
             }
         }
     }
-    public static void main(String[] args) {
+    public static void main(String[] args) throws FileNotFoundException {
         readFile(args[0]);
 
         for (int i = 0; i < sorted_movies.size(); i++) {
-            System.out.println(sorted_movies.get(i));
+            //System.out.println(sorted_movies.get(i));
         }
         System.out.println(sorted_movies.size());
     }
