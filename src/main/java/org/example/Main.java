@@ -21,15 +21,9 @@ public class Main {
 
             // read line by line
             while ((nextRecord = csvReader.readNext()) != null) {
-                    int count = 0;
-                    for (String cell : nextRecord) {
-                        if (count == 1) {
-                            //uses binary search to find index to sort alphabetically
-                            int index = binarySearch(sorted_movies, cell);
-                            sorted_movies.add(index, cell);
-                        }
-                        count++;
-                    }
+                //uses binary search to find index to sort alphabetically
+                int index = binarySearch(sorted_movies, nextRecord[1]);
+                sorted_movies.add(index, nextRecord[1]);
             }
         }
         catch (IOException | CsvValidationException e) {
