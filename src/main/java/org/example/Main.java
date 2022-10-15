@@ -1,9 +1,7 @@
 package org.example;
 
-import com.opencsv.CSVReader;
-import com.opencsv.exceptions.CsvValidationException;
-
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -25,69 +23,90 @@ public class Main {
         }
         return build.toString();
     }
+
     public static void readFile(String filepath) throws FileNotFoundException, UnsupportedEncodingException {
         // Create an object of file reader
-        //FileReader filereader = new FileReader(filepath);
-
-        // create csvReader object
-        CSVReader csvReader = new CSVReader(new InputStreamReader(new FileInputStream(filepath), "UTF-8"));
-        String[] nextRecord;
+        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filepath), StandardCharsets.UTF_8));
+        String line;
 
         //skip the first line
         try {
-            nextRecord = csvReader.readNext();
-        } catch (IOException | CsvValidationException e) {
+            line = reader.readLine();
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        String movie_name;
-
         // read line by line
-        while (nextRecord != null) {
+        while (line != null) {
             try {
-                nextRecord = csvReader.readNext();
+                line = reader.readLine();
+                String[] nextRecord = line.split(",\"\\[\\{");
+                StringBuilder movie_name_build = new StringBuilder();
+                int comma_count = 0;
+                boolean no_actors = false; //takes care of empty actor section in csv
 
-                //movie name is always at index 1
-                movie_name = nextRecord[1];
+                //building the movie name with the string builder until open square bracket
+                for (int i = 0; i < nextRecord[0].length(); i++) {
+                    if (comma_count > 0 && nextRecord[0].charAt(i) != '\"') {
+                        movie_name_build.append(nextRecord[0].charAt(i));
+                    } else if (nextRecord[0].charAt(i) == ',') {
+                        comma_count++;
+                    }
+                    //if it hits an open square bracket, replaces last comma and breaks. means there are no actors
+                    if (nextRecord[0].charAt(i) == '[' && movie_name_build.length() > 1) {
+                        movie_name_build.replace(movie_name_build.length() - 2, movie_name_build.length(), " ");
+                        no_actors = true;
+                        break;
+                    }
+                }
+                //adds movie name to the list of movies and create new actor
+                String movie_name = movie_name_build.toString();
                 Movie movie = new Movie(movie_name);
                 movies.add(movie);
                 Actor actor = new Actor(null);
 
-                String[] split_names = nextRecord[2].split("\"character\": \"");
+                if (nextRecord.length > 1 && !no_actors) {
+                    //prep string to get character
+                    String[] split_names = nextRecord[1].split("\"\"character\"\": \"\"");
+                    for (int i = 1; i < split_names.length; i++) {
+                        //getting character from json
+                        String character_build = extractString(split_names[i]);
 
-                for (int i = 1; i < split_names.length; i++) {
-                    //getting character from json
-                    String character_build = extractString(split_names[i]);
+                        //prep string to get name
+                        String[] get_name = split_names[i].split("\"\"name\"\": \"\"");
+                        //getting name from json NEED TO ACCEPT SPECIAL CHARACTERS
+                        String name_build = null;
+                        if (get_name.length > 1) {
+                           name_build = extractString(get_name[1]);
+                        }
+                        //set movie stats with movie name and character
+                        MovieStats movie_stats = new MovieStats(movie_name, character_build);
 
-                    //getting name from json NEED TO ACCEPT SPECIAL CHARACTERS
-                    String[] get_name = split_names[i].split("\"name\": \"");
-                    String name_build = null;
-                    if (get_name.length > 1) {
-                        name_build = extractString(get_name[1]);
-                    }
-                        //set databases
-                    MovieStats movie_stats = new MovieStats(movie_name, character_build);
-
-                    //need to change binary search for arraylist<object> and make movie sorted a movie class
-                    int index = binarySearch(sorted_actors, name_build, false);
-                    if (index != -1) { //if index == -1, means actor already exists
-                        Actor new_actor = new Actor(name_build);
-                        new_actor.addMovie(movie_stats);
-                        sorted_actors.add(index, new_actor);
-                    } else {
-                        //now that we know the actor exists, find the index to get the actor
-                        index = binarySearch(sorted_actors, name_build, true);
-                        actor = sorted_actors.get(index);
-                        actor.addMovie(movie_stats);
+                        //if there is a name find index to insert actor so that it is sorted
+                        if (name_build != null) {
+                            int index = binarySearch(sorted_actors, name_build, false);
+                            //if index == -1, means actor already exists
+                            if (index != -1) {
+                              Actor new_actor = new Actor(name_build);
+                              new_actor.addMovie(movie_stats);
+                              sorted_actors.add(index, new_actor);
+                            } else {
+                                //now that we know the actor exists, find the index to get the actor
+                                index = binarySearch(sorted_actors, name_build, true);
+                                actor = sorted_actors.get(index);
+                                actor.addMovie(movie_stats);
+                            }
+                        }
                     }
                 }
-
-            } catch (IOException | CsvValidationException | NullPointerException e) {
-                e.printStackTrace();
+            } catch (IOException | NullPointerException e) {
+                //ignore e.printStackTrace();
             }
         }
     }
 
     //took this code from my binary search lab. copied and pasted but changed names
+    //bool lookup is true when looking for an actor in the list
+    //and false when looking to see if actor is in list/where to insert
     public static int binarySearch(ArrayList<Actor> actors, String actor_name, boolean lookup) {
         int middle, low = 0, high = actors.size() - 1;
 
@@ -137,10 +156,6 @@ public class Main {
             throw new RuntimeException(e);
         }
 
-        System.out.println(movies.size());
-        for (int i = 0; i < sorted_actors.size(); i++) {
-            System.out.println(sorted_actors.get(i).getName());
-        }
         //get user input
         Scanner input = new Scanner(System.in);
         System.out.print("Welcome to the Movie Wall!\n" +
