@@ -3,9 +3,7 @@ package org.example;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -27,12 +25,12 @@ public class Main {
         }
         return build.toString();
     }
-    public static void readFile(String filepath) throws FileNotFoundException {
+    public static void readFile(String filepath) throws FileNotFoundException, UnsupportedEncodingException {
         // Create an object of file reader
-        FileReader filereader = new FileReader(filepath);
+        //FileReader filereader = new FileReader(filepath);
 
         // create csvReader object
-        CSVReader csvReader = new CSVReader(filereader);
+        CSVReader csvReader = new CSVReader(new InputStreamReader(new FileInputStream(filepath), "UTF-8"));
         String[] nextRecord;
 
         //skip the first line
@@ -53,7 +51,6 @@ public class Main {
                 Movie movie = new Movie(movie_name);
                 movies.add(movie);
                 Actor actor = new Actor(null);
-
 
                 String[] split_names = nextRecord[2].split("\"character\": \"");
 
@@ -85,7 +82,7 @@ public class Main {
                 }
 
             } catch (IOException | CsvValidationException | NullPointerException e) {
-                //ignore
+                e.printStackTrace();
             }
         }
     }
@@ -134,9 +131,16 @@ public class Main {
     }
     public static void main(String[] args) throws FileNotFoundException {
         //read the file
-        readFile(args[0]);
+        try {
+            readFile(args[0]);
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
 
         System.out.println(movies.size());
+        for (int i = 0; i < sorted_actors.size(); i++) {
+            System.out.println(sorted_actors.get(i).getName());
+        }
         //get user input
         Scanner input = new Scanner(System.in);
         System.out.print("Welcome to the Movie Wall!\n" +
