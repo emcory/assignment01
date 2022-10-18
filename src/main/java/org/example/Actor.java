@@ -1,5 +1,6 @@
 package org.example;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
 
 public class Actor {
@@ -20,7 +21,8 @@ public class Actor {
 
     public void printMovies() {
         for (MovieStats movieStats : movie_appearance) {
-            System.out.println("* Movie: " + movieStats.movie_name + " as " + movieStats.character);
+            PrintWriter printWriter = new PrintWriter(System.out,true);
+            printWriter.println("* Movie: " + movieStats.movie_name + " as " + movieStats.character);
         }
     }
 

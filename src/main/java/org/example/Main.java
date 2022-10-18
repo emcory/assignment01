@@ -146,20 +146,6 @@ public class Main {
             throw new RuntimeException(e);
         }
         PrintWriter printWriter = new PrintWriter(System.out,true);
-        for (Actor sorted_actor : sorted_actors) {
-            printWriter.println(sorted_actor.getName());
-            if (sorted_actor.getName().contains("\\")) {
-                //printWriter.println(sorted_actor.getName());
-                for (int i = 0; i < sorted_actor.getName().length(); i++) {
-                    if(sorted_actor.getName().charAt(i) == '\\') {
-                    }
-                }
-            }
-        }
-//        String string = "Emily";
-//        byte[] ascii = string.getBytes(StandardCharsets.US_ASCII);
-//        String asciiString = Arrays.toString(ascii);
-//        System.out.println(asciiString);
 
         //get user input
         Scanner input = new Scanner(System.in);
@@ -180,7 +166,7 @@ public class Main {
                 System.out.print("Actor doesn't exits in this wall. Did you mean \"" + name + "\"? Y/N: ");
                 String yes_or_no = input.nextLine();
                 if (yes_or_no.equalsIgnoreCase("Y")) {
-                    System.out.println(name);
+                    printWriter.println(name);
                     sorted_actors.get(actor_index).printMovies();
                 }
             }
