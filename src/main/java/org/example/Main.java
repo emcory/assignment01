@@ -1,9 +1,9 @@
 package org.example;
 
 import java.io.*;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class Main {
@@ -11,20 +11,6 @@ public class Main {
     public static ArrayList<Movie> movies = new ArrayList<>();
     //holds all actors
     public static ArrayList<Actor> sorted_actors = new ArrayList<>();
-
-    //helper function that builds a string until it hits a quotation mark. used to parse json
-    public static String extractString(String full_string) {
-        full_string = new String(full_string.getBytes(), StandardCharsets.US_ASCII);
-        StringBuilder build = new StringBuilder();
-        for (int j = 0; j < full_string.length(); j++) {
-            if (full_string.charAt(j) != '\"') {
-                build.append(full_string.charAt(j));
-            } else {
-                break;
-            }
-        }
-        return build.toString();
-    }
 
     public static void readFile(String filepath) throws FileNotFoundException, UnsupportedEncodingException {
         // Create an object of file reader
@@ -71,14 +57,16 @@ public class Main {
                     String[] split_names = nextRecord[1].split("\"\"character\"\": \"\"");
                     for (int i = 1; i < split_names.length; i++) {
                         //getting character from json
-                        String character_build = extractString(split_names[i]);
+                        int end_index = split_names[i].indexOf('\"');
+                        String character_build = split_names[i].substring(0, end_index);
 
                         //prep string to get name
                         String[] get_name = split_names[i].split("\"\"name\"\": \"\"");
                         //getting name from json NEED TO ACCEPT SPECIAL CHARACTERS
                         String name_build = null;
                         if (get_name.length > 1) {
-                           name_build = extractString(get_name[1]);
+                            end_index = (get_name[1].indexOf('\"'));
+                            name_build = get_name[1].substring(0, end_index);
                         }
                         //set movie stats with movie name and character
                         MovieStats movie_stats = new MovieStats(movie_name, character_build);
@@ -157,10 +145,21 @@ public class Main {
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
-        PrintStream out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
+        PrintWriter printWriter = new PrintWriter(System.out,true);
         for (Actor sorted_actor : sorted_actors) {
-            out.println(sorted_actor.getName());
+            printWriter.println(sorted_actor.getName());
+            if (sorted_actor.getName().contains("\\")) {
+                //printWriter.println(sorted_actor.getName());
+                for (int i = 0; i < sorted_actor.getName().length(); i++) {
+                    if(sorted_actor.getName().charAt(i) == '\\') {
+                    }
+                }
+            }
         }
+//        String string = "Emily";
+//        byte[] ascii = string.getBytes(StandardCharsets.US_ASCII);
+//        String asciiString = Arrays.toString(ascii);
+//        System.out.println(asciiString);
 
         //get user input
         Scanner input = new Scanner(System.in);
