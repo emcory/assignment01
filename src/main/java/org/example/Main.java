@@ -1,6 +1,7 @@
 package org.example;
 
 import java.io.*;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -13,6 +14,7 @@ public class Main {
 
     //helper function that builds a string until it hits a quotation mark. used to parse json
     public static String extractString(String full_string) {
+        full_string = new String(full_string.getBytes(), StandardCharsets.US_ASCII);
         StringBuilder build = new StringBuilder();
         for (int j = 0; j < full_string.length(); j++) {
             if (full_string.charAt(j) != '\"') {
@@ -155,6 +157,10 @@ public class Main {
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
+        PrintStream out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
+        for (Actor sorted_actor : sorted_actors) {
+            out.println(sorted_actor.getName());
+        }
 
         //get user input
         Scanner input = new Scanner(System.in);
@@ -172,7 +178,12 @@ public class Main {
             if (name.equalsIgnoreCase(lookup_name)) {
                 sorted_actors.get(actor_index).printMovies();
             } else {
-                System.out.println("Actor doesn't exits in this wall. Did you mean \"" + name + "\"?");
+                System.out.print("Actor doesn't exits in this wall. Did you mean \"" + name + "\"? Y/N: ");
+                String yes_or_no = input.nextLine();
+                if (yes_or_no.equalsIgnoreCase("Y")) {
+                    System.out.println(name);
+                    sorted_actors.get(actor_index).printMovies();
+                }
             }
 
             //loop through again
