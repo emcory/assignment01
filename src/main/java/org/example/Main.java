@@ -61,7 +61,7 @@ public class Main {
 
                         //prep string to get name
                         String[] get_name = split_names[i].split("\"\"name\"\": \"\"");
-                        //getting name from json NEED TO ACCEPT SPECIAL CHARACTERS
+                        //getting name from json
                         String name_build = null;
                         if (get_name.length > 1) {
                             end_index = (get_name[1].indexOf('\"'));
